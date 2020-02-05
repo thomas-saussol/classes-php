@@ -6,7 +6,7 @@
     $user->register($_POST['login'], $_POST['password'], $_POST['email'], $_POST['firstname'], $_POST['lastname']);
   }
 
-
+ 
 ?>
 
 

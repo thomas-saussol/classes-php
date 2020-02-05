@@ -6,7 +6,7 @@ class User
   public $login="";
   public $email="";
   public $firstname="";
-  public $lastname="";
+  public $lastname=""; 
 
   public function register($login, $password, $email, $firstname, $lastname)
   {
