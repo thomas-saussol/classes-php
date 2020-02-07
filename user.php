@@ -1,120 +1,209 @@
+
 <?php
 
-class User {
-    private $id = '';
-    public $login = '';
-    public $email = '';
-    public $firstname = '';
-    public $lastname = '';
+class user
+{
 
+	private $id;
+	public 	$login;
+	public 	$email;
+	public 	$firstname;
+	public 	$lastname;
 
-    public function register($login,$password,$email,$firstname,$lastname)
+public function register($login, $password, $email, $firstname, $lastname)
+{
+
+	$bdd=mysqli_connect("localhost", "root", "", "classes");
+	$reqtab="SELECT *FROM users WHERE login='$login'";
+	$querytab=mysqli_query($bdd, $reqtab);
+	$num=mysqli_num_rows($querytab);
+
+		if($num == 0)
+		{
+			$hash = password_hash($password, PASSWORD_BCRYPT, ['cost' => 12]);
+			$requser="INSERT INTO users VALUES(NULL, '$login', '$hash', '$email','$firstname','$lastname')";
+			$queryuser=mysqli_query($bdd, $requser);
+			return array($login, $password, $email, $firstname, $lastname);
+		}
+		else
+		{
+			return "login déjà existant";
+		}
+
+}
+
+public function connect($login, $password)
+{
+
+	$bdd=mysqli_connect("localhost", "root", "", "classes");
+	$query="SELECT *from users WHERE login='$login'";
+	$result= mysqli_query($bdd, $query);
+	$row = mysqli_fetch_array($result);
+
+		if(password_verify($password,$row['password']))
+		{
+			$this->id=$row['id'];
+			$this->login=$login;
+			$this->email=$row['email'];
+			$this->firstname=$row['firstname'];
+			$this->lastname=$row['lastname'];
+
+			$_SESSION['login']=$login;
+			$_SESSION['password']=$password;
+			return(var_dump($row));
+		}
+		else
+		{
+			return "Login ou mot de passe incorrect";
+		}
+
+}
+
+public function disconnect()
+{
+	session_destroy();
+	return "Vous êtes bien déconnecté";
+}
+
+public function delete()
+{
+
+	if(isset($_SESSION['login']))
+	{
+		$login=$_SESSION['login'];
+		$bdd=mysqli_connect("localhost", "root", "", "classes");
+		$del="DELETE FROM users WHERE login='$login'";
+		mysqli_query($bdd, $del);
+		session_destroy();
+	}
+
+}
+
+public function update($login, $password, $email, $firstname,
+$lastname)
+{
+	if(isset($_SESSION['login']))
+	{
+
+		$bdd=mysqli_connect("localhost", "root", "", "classes");
+		$log=$_SESSION['login'];
+		$hash = password_hash($password, PASSWORD_BCRYPT, ['cost' => 12]);
+		$update="UPDATE users SET login='$login', password='$hash', email='$email', firstname='$firstname', lastname='$lastname' WHERE login='$log'";
+		mysqli_query($bdd, $update);
+	}
+}
+
+public function isConnected()
+{
+	$connected=false;
+	if(isset($_SESSION['login']))
+	{
+		$connected=true;
+	}
+	else
+	{
+		$connected=false;
+	}
+
+	return($connected);
+
+}
+
+public function getAllInfos()
+{
+	if(isset($_SESSION['login']))
+	{
+        return($this);
+    }
+    else
     {
 
-        $connexion =  mysqli_connect("localhost","root","","classe");
-        $password= password_hash($password, PASSWORD_DEFAULT);
-        $requet="SELECT * FROM user WHERE login='".$login."'";
-        $query2=mysqli_query($connexion,$requet);
-        $resultat=mysqli_fetch_all($query2);
-        $trouve=false;
-
-
-        if(!empty($resultat[0]))
-        {
-           $trouve=true;
-           echo "<p class='erreur'><b>Login déja existant!!</b></p>";
-        }
-
-       if ($trouve==false)
-       {
-            $sql = "INSERT INTO user (`id`, `login`, `password`, `email`, `firstname`, `lastname`) VALUES (NULL, '".$login."','".$password."','".$email."','".$firstname."','".$lastname."')";
-
-            if(mysqli_query($connexion,$sql))
-           {
-                return array($login, $password, $email, $firstname, $lastname);
-            }
-        }
-
-       else
-       {
-          echo "<p class='erreur'><b>Les mots de passe doivent être identique!</b></p>";
-       }
-    }
-
-    public function connect($login, $password){
-
-        if (!isset($_SESSION['login']))
-    {
-            if(isset($_POST['login']) && isset($_POST['password']))
-        {
-                $connexion = mysqli_connect ("localhost", "root", "", "classe");
-                $login = mysqli_real_escape_string($connexion,htmlspecialchars($_POST['login']));
-                $password = mysqli_real_escape_string($connexion,htmlspecialchars($_POST['password']));
-
-            if($login !== "" && $password !== "")
-            {
-                $requete = "SELECT count(*) FROM user WHERE login = '".$login."' ";
-                $exec_requete = mysqli_query($connexion,$requete);
-                $reponse      = mysqli_fetch_array($exec_requete);
-                $count = $reponse['count(*)'];
-
-                $requete4 = "SELECT * FROM user WHERE login='".$login."'";
-                $exec_requete4 = mysqli_query($connexion,$requete4);
-                $reponse4 = mysqli_fetch_array($exec_requete4);
-
-                echo "vous etes bien connecté";
-                if( $count!=0 && $login !== "" && password_verify($password, $reponse4[2]) )
-                {
-
-                $_SESSION['login'] = $_POST['login'];
-                $utilisateurs = $_SESSION['login'];
-                }
-                else
-                {
-                header('Location: index.php?erreur=1'); // utilisateur ou mot de passe incorrect
-                }
-            }
-
-        }
-
+    	return "Aucun utilisateur n'est connecté";
     }
 }
 
-    public function disconnect(){
-           session_unset();
-        }
-
-    public function delete(){
-      $connexion = mysqli_connect ("localhost", "root", "", "classe");
-      $requete = "DELETE  FROM user WHERE login='".$_SESSION['login']."'";
-      $query = mysqli_query($connexion,$requete);
-
-    }
-    public function update($login, $password, $email, $firstname,$lastname){
-         $connexion = mysqli_connect ("localhost", "root", "", "classe");
-          $password= password_hash($_POST["password"],PASSWORD_DEFAULT);
-         $requete = "UPDATE user SET login = '$login', password = '$password', email = '$email', firstname = '$firstname', lastname = '$lastname' WHERE login = '".$_SESSION['login']."'";
-         var_dump($requete);
-         $query = mysqli_query($connexion,$requete);
-         var_dump($query);
-         $_SESSION['login'] = $login;
-         header('Location: index.php');
-
-    }
-
-
-     public function isConnected(){
-     	if (isset($_SESSION['login']))
-     		return true;
-
-     	else{
-     		echo "vous devez vous connecter";
-     		return false;
-
-     	}
+public function getLogin()
+{
+	 return($this->login);
 }
 
+public function getEmail()
+{
+	 return($this->email);
+}
+
+public function getFirstname()
+{
+	 return($this->firstname);
+}
+
+public function getLastname()
+{
+	 return($this->lastname);
+}
+
+public function refresh()
+{
+	$bdd=mysqli_connect("localhost", "root", "", "classes");
+	$login=$_SESSION['login'];
+	$queryuser="SELECT *from users WHERE login='$login'";
+	$resultuser= mysqli_query($bdd, $queryuser);
+	$tabuser=mysqli_fetch_array($resultuser);
+
+	$this->id=$tabuser['id'];
+	$this->login=$tabuser['login'];
+	$this->email=$tabuser['email'];
+	$this->firstname=$tabuser['firstname'];
+	$this->lastname=$tabuser['lastname'];
+}
 }
 
 
-?>
+
+session_start();
+
+
+$user = new user;
+
+echo $user->register('test7','azerty','thomasemail','thomas', 'saussol');
+echo '<br>';
+
+
+
+echo $user->connect('test7', 'azerty');
+echo '<br>';
+
+
+
+
+// echo $user->disconnect();
+// echo '<br>';
+
+// echo $user->delete();
+// echo '<br>';
+
+// echo $user->update('test7','azerty','thomasemail','thomas', 'saussol');
+// echo '<br>';
+
+// echo $user->isConnected();
+// echo '<br>';
+
+
+// $info=$user->getAllInfos();
+// var_dump($info);
+// echo '<br>';
+
+// echo $user->getLogin();
+// echo '<br>';
+
+// echo $user->getEmail();
+// echo '<br>';
+
+// echo $user->getFirstname();
+// echo '<br>';
+
+// echo $user->getLastname();
+// echo '<br>';
+
+// echo $user->refresh();
+// echo '<br>';
