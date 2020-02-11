@@ -1,5 +1,6 @@
 
 <?php
+session_start();
 
 class user
 {
@@ -31,6 +32,7 @@ public function register($login, $password, $email, $firstname, $lastname)
 		}
 
 }
+
 
 public function connect($login, $password)
 {
@@ -158,52 +160,4 @@ public function refresh()
 }
 }
 
-
-
-session_start();
-
-
-$user = new user;
-
-echo $user->register('test7','azerty','thomasemail','thomas', 'saussol');
-echo '<br>';
-
-
-
-echo $user->connect('test7', 'azerty');
-echo '<br>';
-
-
-
-
-// echo $user->disconnect();
-// echo '<br>';
-
-// echo $user->delete();
-// echo '<br>';
-
-// echo $user->update('test7','azerty','thomasemail','thomas', 'saussol');
-// echo '<br>';
-
-// echo $user->isConnected();
-// echo '<br>';
-
-
-// $info=$user->getAllInfos();
-// var_dump($info);
-// echo '<br>';
-
-// echo $user->getLogin();
-// echo '<br>';
-
-// echo $user->getEmail();
-// echo '<br>';
-
-// echo $user->getFirstname();
-// echo '<br>';
-
-// echo $user->getLastname();
-// echo '<br>';
-
-// echo $user->refresh();
-// echo '<br>';
+?>
