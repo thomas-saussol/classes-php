@@ -1,6 +1,6 @@
 
 <?php
-session_start();
+
 
 class user
 {
@@ -120,7 +120,7 @@ public function getAllInfos()
     else
     {
 
-    	return "Aucun utilisateur n'est connecté";
+    	return "Il n'y a personne connecté à ce nom";
     }
 }
 
